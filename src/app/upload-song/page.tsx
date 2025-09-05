@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/SupabaseClient.ts";
 import { useRouter } from "next/navigation";
+import useUserSession from "../../../custom-hooks/useUserSession.ts";
 
 export default function Page() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Page() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const { session } = useUserSession();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -28,7 +30,6 @@ export default function Page() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     if (!title.trim() || !artist.trim() || !audioFile || !imageFile) {
       setMessage("Al fields are required!");
       setLoading(false);
@@ -36,7 +37,62 @@ export default function Page() {
     }
 
     try {
-      // Upload a Song
+      // Upload the Song
+      const timestamp = Date.now();
+
+      // Upload the Image
+      const imagePath = `/${timestamp}_${imageFile.name}`;
+      const { error: imgError } = await supabase.storage
+        .from("cover-images")
+        .upload(imagePath, imageFile);
+      if (imgError) {
+        setMessage(imgError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Get Public URL
+      const {
+        data: { publicUrl: imageURL },
+      } = supabase.storage.from("cover-images").getPublicUrl(imagePath);
+
+      // Upload Audio
+      const audioPath = `/${timestamp}_${audioFile.name}`;
+      const { error: audioError } = await supabase.storage
+        .from("songs")
+        .upload(audioPath, audioFile);
+      if (audioError) {
+        setMessage(audioError.message);
+        setLoading(false);
+        return;
+      }
+
+      const {
+        data: { publicUrl: audioURL },
+      } = supabase.storage.from("songs").getPublicUrl(audioPath);
+
+      // Save songs to supabase table
+      const { error: insertError } = await supabase.from("songs").insert({
+        title,
+        artist,
+        cover_image_url: imageURL,
+        audio_url: audioPath,
+        user_id: session?.user.id,
+      });
+      if (insertError) {
+        setMessage(insertError.message);
+        setLoading(false);
+        return;
+      }
+
+      setTitle("");
+      setArtist("");
+      setImageFile(null);
+      setAudioFile(null);
+      setMessage("Song uploaded successfully");
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     } catch (err) {
       console.log("Catched error", err);
     }
@@ -108,9 +164,15 @@ export default function Page() {
             }}
           />
 
-          <button className="bg-third-text py-3 rounded-full w-full font-bold cursor-pointer hover:opacity-80 transition">
-            Add Song
-          </button>
+          {loading ? (
+            <button className="bg-third-text py-3 rounded-full w-full font-bold cursor-pointer hover:opacity-80 transition">
+              Uploading...
+            </button>
+          ) : (
+            <button className="bg-third-text py-3 rounded-full w-full font-bold cursor-pointer hover:opacity-80 transition">
+              Add Song
+            </button>
+          )}
         </form>
       </div>
     </div>
