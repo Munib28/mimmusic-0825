@@ -76,7 +76,7 @@ export default function Page() {
         title,
         artist,
         cover_image_url: imageURL,
-        audio_url: audioPath,
+        audio_url: audioURL,
         user_id: session?.user.id,
       });
       if (insertError) {
