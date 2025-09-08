@@ -1,9 +1,9 @@
 import Image from "next/image";
 import React from "react";
-import { FaTrash } from "react-icons/fa";
 import { supabase } from "../../lib/SupabaseClient.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Song } from "../../types/songs.ts";
+import DeleteButton from "./DeleteButton.tsx";
 
 type UserSongsProps = {
   userId: string | undefined;
@@ -47,9 +47,11 @@ export default function UserSongs({ userId }: UserSongsProps) {
             className="flex relative gap-2 items-center cursor-pointer mb-4 p-2 rounded-lg hover:bg-hover group"
             key={song.id}
           >
-            <button className="text-secondary-text absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer hidden group-hover:block">
-              <FaTrash />
-            </button>
+            <DeleteButton
+              songId={song.id}
+              imagePath={song.cover_image_url}
+              audioPath={song.audio_url}
+            />
             <Image
               src={song.cover_image_url}
               alt="cover-image"
