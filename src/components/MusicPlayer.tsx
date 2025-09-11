@@ -10,7 +10,7 @@ import {
   IoMdVolumeHigh,
   IoMdVolumeOff,
 } from "react-icons/io";
-import { LuRepeat1 } from "react-icons/lu";
+import { LuRepeat, LuRepeat1 } from "react-icons/lu";
 import { MdOutlineQueueMusic } from "react-icons/md";
 import { PlayerContext } from "../../layout/FrontendLayout";
 
@@ -21,6 +21,7 @@ export default function MusicPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [previousVolume, setPreviousVolume] = useState(0);
+  const [repeatSong, setRepeatSong] = useState(false);
 
   const context = useContext(PlayerContext);
 
@@ -78,6 +79,7 @@ export default function MusicPlayer() {
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const vol = parseInt(e.target.value);
+    // Unmute music if volume is changed from 0
     setVolume(vol);
     if (audioRef.current) {
       audioRef.current.volume = vol / 100;
@@ -91,7 +93,7 @@ export default function MusicPlayer() {
         audioRef.current.volume = previousVolume / 100;
       }
     } else {
-      // Mute music
+      // Mute music and save previous volume
       setPreviousVolume(volume);
       setVolume(0);
       if (audioRef.current) {
@@ -99,6 +101,25 @@ export default function MusicPlayer() {
       }
     }
   };
+
+  // All Side Effects
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+      setDuration(audio.duration | 0);
+    };
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateTime);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateTime);
+    };
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -122,6 +143,25 @@ export default function MusicPlayer() {
     playAudio();
   }, [currentMusic]);
 
+  // This would listen for when a song ends and automatically play the next song
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleEnded = () => {
+      if (repeatSong) {
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        playNext();
+      }
+    };
+    audio.addEventListener("ended", handleEnded);
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [repeatSong, playNext]);
+
   if (!currentMusic) {
     return null; // Don't render the player if there's no current music
   }
@@ -140,14 +180,19 @@ export default function MusicPlayer() {
           />
           <div className="text-sm">
             <p className="text-white">{currentMusic.title}</p>
-            <p className="text-secondary-text font-normal">{currentMusic.artist}</p>
+            <p className="text-secondary-text font-normal">
+              {currentMusic.artist}
+            </p>
           </div>
         </div>
 
         {/* Song Controls */}
         <div className="max-w-[400px] w-full flex flex-col items-center gap-3">
           <div className="flex gap-4">
-            <button onClick={playPrev} className="text-xl text-secondary-text hover:opacity-60 transition-opacity">
+            <button
+              onClick={playPrev}
+              className="text-xl text-secondary-text hover:opacity-60 transition-opacity"
+            >
               <IoMdSkipBackward />
             </button>
             <button
@@ -156,7 +201,10 @@ export default function MusicPlayer() {
             >
               {isPlaying ? <IoMdPause /> : <IoMdPlay />}
             </button>
-            <button onClick={playNext} className="text-xl text-secondary-text hover:opacity-60 transition-opacity">
+            <button
+              onClick={playNext}
+              className="text-xl text-secondary-text hover:opacity-60 transition-opacity"
+            >
               <IoMdSkipForward />
             </button>
           </div>
@@ -182,9 +230,16 @@ export default function MusicPlayer() {
 
         {/* Volume Control */}
         <div className="flex items-center gap-2">
-          <button className="text-secondary-text text-xl cursor-pointer">
-            <LuRepeat1 />
-          </button>
+          {repeatSong ? (
+            <button onClick={() => setRepeatSong(false)} className="text-primary text-xl cursor-pointer">
+              <LuRepeat1 />
+            </button>
+          ) : (
+            <button onClick={() => setRepeatSong(true)} className="text-secondary-text text-xl cursor-pointer">
+              <LuRepeat />
+            </button>
+          )}
+
           <button
             onClick={() => {
               setIsQueueModalOpen(!isQueueModalOpen);
@@ -205,7 +260,7 @@ export default function MusicPlayer() {
             type="range"
             min="0"
             max="100"
-            className="w-[100px] outline-none h-1 bg-zinc-700 accent-white appearance-none"
+            className="w-[100px] outline-none h-1 bg-zinc-700 accent-white appearance-none hover:opacity-70 transition-opacity cursor-pointer"
           />
         </div>
       </div>

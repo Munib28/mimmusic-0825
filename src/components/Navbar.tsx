@@ -21,13 +21,15 @@ function Navbar() {
   return (
     <nav className="h-15 flex justify-between items-center px-6 fixed top-0 left-0 w-full bg-black z-100">
       <div className="flex gap-6 items-center">
-        <Image
-          src="/images/logo.png"
-          alt="logo"
-          width={50}
-          height={50}
-          className="w-9 h-9"
-        />
+        <Link href="/">
+          <Image
+            src="/images/logo.png"
+            alt="logo"
+            width={50}
+            height={50}
+            className="w-9 h-9"
+          />
+        </Link>
         <Link
           href="/"
           className="bg-background w-11 h-11 grid place-items-center text-white text-3xl rounded-full"
