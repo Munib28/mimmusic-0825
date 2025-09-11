@@ -1,15 +1,23 @@
 import Image from "next/image";
-import React from "react";
+import React, { useContext } from "react";
 import { supabase } from "../../lib/SupabaseClient.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Song } from "../../types/songs.ts";
 import DeleteButton from "./DeleteButton.tsx";
+import { PlayerContext } from "../../layout/FrontendLayout.tsx";
 
 type UserSongsProps = {
   userId: string | undefined;
 };
 
 export default function UserSongs({ userId }: UserSongsProps) {
+  const context = useContext(PlayerContext);
+  if (!context) {
+    throw new Error("Queue must be used within a Provider");
+  }
+
+  const { setQueue, setCurrentIndex } = context;
+
   const getUserSongs = async () => {
     const { error, data } = await supabase
       .from("songs")
@@ -33,6 +41,11 @@ export default function UserSongs({ userId }: UserSongsProps) {
     queryKey: ["UserSongs"],
   });
 
+  const startPlayingSong = (songs: Song[], index: number) => {
+    setCurrentIndex(index);
+    setQueue(songs);
+  };
+
   if (isLoading)
     return <h2 className="text-center text-white text-2xl">Loading</h2>;
 
@@ -46,6 +59,7 @@ export default function UserSongs({ userId }: UserSongsProps) {
           <div
             className="flex relative gap-2 items-center cursor-pointer mb-4 p-2 rounded-lg hover:bg-hover group"
             key={song.id}
+            onClick={() => startPlayingSong(songs, index)}
           >
             <DeleteButton
               songId={song.id}

@@ -28,7 +28,13 @@ export default function MusicPlayer() {
     throw new Error("Queue must be used within a Provider");
   }
 
-  const { isQueueModalOpen, setIsQueueModalOpen } = context;
+  const {
+    isQueueModalOpen,
+    setIsQueueModalOpen,
+    currentMusic,
+    playNext,
+    playPrev,
+  } = context;
 
   const togglePlayButton = () => {
     if (!audioRef.current) return;
@@ -100,28 +106,48 @@ export default function MusicPlayer() {
     }
   }, [volume]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentMusic) return;
+
+    const playAudio = async () => {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error("Error playing audio:", error);
+        setIsPlaying(false);
+      }
+    };
+    playAudio();
+  }, [currentMusic]);
+
+  if (!currentMusic) {
+    return null; // Don't render the player if there's no current music
+  }
+
   return (
     <div className="fixed bottom-0 left-0 w-full bg-black text-white px-4 py-3 shadow-md z-50">
-      <audio src="/audio/Caruso.mp3" ref={audioRef}></audio>
+      <audio src={currentMusic.audio_url || ""} ref={audioRef}></audio>
       <div className="max-w-8xl w-[95%] mx-auto flex items-center justify-between">
         <div className="flex gap-4 items-center">
           <Image
-            src="/images/cover-2.jpeg"
+            src={currentMusic.cover_image_url || ""}
             alt="cover-image"
             width={500}
             height={500}
             className="w-13 h-13 object-cover rounded-md"
           />
           <div className="text-sm">
-            <p className="text-white">Caruso</p>
-            <p className="text-secondary-text font-normal">Lucio Dalla</p>
+            <p className="text-white">{currentMusic.title}</p>
+            <p className="text-secondary-text font-normal">{currentMusic.artist}</p>
           </div>
         </div>
 
         {/* Song Controls */}
         <div className="max-w-[400px] w-full flex flex-col items-center gap-3">
           <div className="flex gap-4">
-            <button className="text-xl text-secondary-text">
+            <button onClick={playPrev} className="text-xl text-secondary-text hover:opacity-60 transition-opacity">
               <IoMdSkipBackward />
             </button>
             <button
@@ -130,7 +156,7 @@ export default function MusicPlayer() {
             >
               {isPlaying ? <IoMdPause /> : <IoMdPlay />}
             </button>
-            <button className="text-xl text-secondary-text">
+            <button onClick={playNext} className="text-xl text-secondary-text hover:opacity-60 transition-opacity">
               <IoMdSkipForward />
             </button>
           </div>

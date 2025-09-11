@@ -5,15 +5,22 @@ import { IoMdPlay } from "react-icons/io";
 import { supabase } from "../../lib/SupabaseClient.ts";
 import { useQuery } from "@tanstack/react-query";
 import { Song } from "../../types/songs.ts";
+import { useContext } from "react";
+import { PlayerContext } from "../../layout/FrontendLayout.tsx";
 
 export default function Allsongs() {
+  const context = useContext(PlayerContext);
+  if (!context) {
+    throw new Error("Queue must be used within a Provider");
+  }
+
+  const { setQueue, setCurrentIndex } = context;
+
   const getAllSongs = async () => {
     const { data, error } = await supabase.from("songs").select("*");
-
     if (error) {
       console.log("fetchAllSongsError: ", error.message);
     }
-
     return data;
   };
 
@@ -26,6 +33,11 @@ export default function Allsongs() {
     queryFn: getAllSongs,
     queryKey: ["allSongs"],
   });
+
+  const startPlayingSong = (songs: Song[], index: number) => {
+    setCurrentIndex(index);
+    setQueue(songs);
+  };
 
   if (isLoading) {
     return (
@@ -52,6 +64,7 @@ export default function Allsongs() {
         {songs?.map((song: Song, index) => {
           return (
             <div
+              onClick={() => startPlayingSong(songs, index)}
               className="bg-background relative p-3 cursor-pointer rounded-md hover:bg-hover group"
               key={song.id}
             >

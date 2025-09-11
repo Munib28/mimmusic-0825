@@ -5,11 +5,19 @@ import Navbar from "@/components/Navbar";
 import Queue from "@/components/Queue";
 import Sidebar from "@/components/Sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
+import { Song } from "../types/songs.ts";
 
 type PlayerContextType = {
   isQueueModalOpen: boolean;
   setIsQueueModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  currentMusic: Song | null;
+  setCurrentMusic: React.Dispatch<React.SetStateAction<Song | null>>;
+  queue: Song[];
+  setQueue: (songs: Song[]) => void;
+  playNext: () => void;
+  playPrev: () => void;
+  setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export const PlayerContext = createContext<PlayerContextType | undefined>(
@@ -21,6 +29,27 @@ export default function FrontendLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const queryclient = new QueryClient();
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
+  const [currentMusic, setCurrentMusic] = useState<null | Song>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [queue, setQueue] = useState<Song[]>([]);
+
+  const playNext = () => {
+    if (currentIndex < queue.length - 1) {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  const playPrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
+  useEffect(() => {
+    if (queue.length > 0 && currentIndex >= 0 && currentIndex < queue.length) {
+      setCurrentMusic(queue[currentIndex]);
+    }
+  }, [currentIndex, queue]);
 
   return (
     <QueryClientProvider client={queryclient}>
@@ -28,6 +57,13 @@ export default function FrontendLayout({
         value={{
           isQueueModalOpen,
           setIsQueueModalOpen,
+          currentMusic,
+          setCurrentMusic,
+          queue,
+          setQueue,
+          playNext,
+          playPrev,
+          setCurrentIndex,
         }}
       >
         <div className="min-h-screen">
@@ -35,7 +71,7 @@ export default function FrontendLayout({
           <main>
             <Sidebar />
             <Queue />
-            <MusicPlayer />
+            {currentMusic && <MusicPlayer />}
             {children}
           </main>
         </div>
