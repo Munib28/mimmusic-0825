@@ -19,7 +19,19 @@ export default function Sidebar() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transitin-transform duration-500 lg:translate-x-0`}
       >
-        <h2 className="text'2xl text-white text-center">Loading</h2>
+        <div className="flex justify-between text-primary-text items-center p-2 mb-4">
+          <h2 className="font-bold">Your Library</h2>
+          <Link href="upload-song">
+            <LuPlus size={20} />
+          </Link>
+        </div>
+
+        {[...Array(10)].map((i, index) => (
+          <div key={index} className="flex gap-2 animate-pulse mb-4">
+            <div className="w-10 h-10 rounded-md bg-hover"></div>
+            <div className="h-5 w-[80%] rounded-md bg-hover"></div>
+          </div>
+        ))}
       </aside>
     );
 

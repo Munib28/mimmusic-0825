@@ -47,7 +47,16 @@ export default function UserSongs({ userId }: UserSongsProps) {
   };
 
   if (isLoading)
-    return <h2 className="text-center text-white text-2xl">Loading</h2>;
+    return (
+      <div>
+        {[...Array(10)].map((i, index) => (
+          <div key={index} className="flex gap-2 animate-pulse mb-4">
+            <div className="w-10 h-10 rounded-md bg-hover"></div>
+            <div className="h-5 w-[80%] rounded-md bg-hover"></div>
+          </div>
+        ))}
+      </div>
+    );
 
   if (isError)
     return <h2 className="text-center text-white text-2xl">{error.message}</h2>;
