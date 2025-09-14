@@ -18,6 +18,7 @@ type PlayerContextType = {
   playNext: () => void;
   playPrev: () => void;
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
+  currentIndex: number;
 };
 
 export const PlayerContext = createContext<PlayerContextType | undefined>(
@@ -64,6 +65,7 @@ export default function FrontendLayout({
           playNext,
           playPrev,
           setCurrentIndex,
+          currentIndex
         }}
       >
         <div className="min-h-screen">

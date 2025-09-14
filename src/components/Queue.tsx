@@ -3,16 +3,28 @@
 import Image from "next/image";
 import React, { useContext } from "react";
 import { PlayerContext } from "../../layout/FrontendLayout";
+import { Song } from "../../types/songs.ts";
 
 export default function Queue() {
-  
   const context = useContext(PlayerContext);
 
   if (!context) {
     throw new Error("Queue must be used within a Provider");
   }
 
-  const { isQueueModalOpen } = context;
+  const {
+    isQueueModalOpen,
+    currentMusic,
+    currentIndex,
+    queue,
+    setCurrentIndex,
+    setQueue,
+  } = context;
+
+  const startPlayingSong = (songs: Song[], index: number) => {
+    setCurrentIndex(index);
+    setQueue(songs);
+  };
 
   if (!isQueueModalOpen) return null;
 
@@ -22,34 +34,48 @@ export default function Queue() {
       <div className="mt-8">
         <h2 className="text-white font-bold mb-3">Now Playing</h2>
         <div className="flex gap-2 items-center mb-2 cursor-pointer p-2 rounded-lg hover:bg-hover">
-          <Image
-            src="/images/cover-3.jpeg"
-            alt="queue-image"
-            width={300}
-            height={300}
-            className="w-10 h-10 object-cover rounded-md"
-          />
+          {currentMusic && (
+            <Image
+              src={currentMusic?.cover_image_url}
+              alt="queue-image"
+              width={300}
+              height={300}
+              className="w-10 h-10 object-cover rounded-md"
+            />
+          )}
           <div>
-            <p className="text-primary font-semibold">Diamond</p>
-            <p className="text-sm text-secondary-text">Solid</p>
+            <p className="text-primary font-semibold">{currentMusic?.title}</p>
+            <p className="text-sm text-secondary-text">
+              {currentMusic?.artist}
+            </p>
           </div>
         </div>
       </div>
       <div className="mt-8">
         <h2 className="text-white font-bold mb-3">Queue List</h2>
-        <div className="flex gap-2 items-center mb-2 cursor-pointer p-2 rounded-lg hover:bg-hover">
-          <Image
-            src="/images/cover-3.jpeg"
-            alt="queue-image"
-            width={300}
-            height={300}
-            className="w-10 h-10 object-cover rounded-md"
-          />
-          <div>
-            <p className="text-white font-semibold">Diamond</p>
-            <p className="text-sm text-secondary-text">Solid</p>
-          </div>
-        </div>
+        {queue.map((song: Song, index) => {
+          return (
+            <div
+              key={song.id}
+              onClick={() => {
+                startPlayingSong(queue, index);
+              }}
+              className="flex gap-2 items-center mb-2 cursor-pointer p-2 rounded-lg hover:bg-hover"
+            >
+              <Image
+                src={song.cover_image_url}
+                alt="queue-image"
+                width={300}
+                height={300}
+                className="w-10 h-10 object-cover rounded-md"
+              />
+              <div>
+                <p className={`font-semibold ${currentIndex === index ? "text-primary" : "text-primary-text"}`}>{song.title}</p>
+                <p className="text-sm text-secondary-text">{song.artist}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
