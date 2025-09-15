@@ -23,7 +23,7 @@ export default function Page() {
         setLoading(false);
       }
     });
-  }, []);
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
