@@ -61,6 +61,9 @@ export default function UserSongs({ userId }: UserSongsProps) {
   if (isError)
     return <h2 className="text-center text-white text-2xl">{error.message}</h2>;
 
+  if (songs?.length === 0)
+    return <h2 className="text-center text-white text-2xl">No Songs Found</h2>;
+
   return (
     <div>
       {songs?.map((song: Song, index) => {

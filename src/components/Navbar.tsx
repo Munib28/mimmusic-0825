@@ -34,7 +34,7 @@ function Navbar() {
           href="/"
           className="bg-background w-11 h-11 grid place-items-center text-white text-3xl rounded-full"
         >
-          <MdHomeFilled />
+          <MdHomeFilled className="hover:opacity-70" />
         </Link>
         <div className="bg-background hidden lg:flex items-center h-11 w-90 px-3 gap-3 text-primary-text">
           <GoSearch className="text-primary-text shrink-0 size={22}" />
@@ -47,17 +47,7 @@ function Navbar() {
       </div>
 
       <div className="flex gap-8 items-center">
-        <div className="lg:flex hidden gap-2 text-third-text font-bold border-r-2 border-primary-text pr-6">
-          <a href="#" className="hover:text-primary-text">
-            Premium
-          </a>
-          <a href="#" className="hover:text-primary-text">
-            Support
-          </a>
-          <a href="#" className="hover:text-primary-text">
-            Download
-          </a>
-        </div>
+        <div className="lg:flex hidden gap-2 text-third-text font-bold border-r-2 border-primary-text pr-6"></div>
         <div>
           {!loading && (
             <>
