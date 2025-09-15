@@ -84,7 +84,7 @@ export default function Page() {
             Continue
           </button>
           <div className="text-secondary-text text-center my-6">
-            <span>Don't have an account?</span>
+            <span>Do not have an account?</span>
             <Link
               href="signup"
               className="ml-2 text-white underline hover:text-third-text"
